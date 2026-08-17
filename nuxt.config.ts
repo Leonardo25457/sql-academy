@@ -11,6 +11,12 @@ export default defineNuxtConfig({
 
   css: ['~/assets/styles/main.scss'],
 
+  vite: {
+    optimizeDeps: {
+      exclude: ['@sqlite.org/sqlite-wasm'],
+    },
+  },
+
   typescript: {
     strict: true,
     typeCheck: true,
