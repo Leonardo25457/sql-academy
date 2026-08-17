@@ -13,15 +13,18 @@
     "lint": "eslint .",
     "postinstall": "nuxt prepare",
     "preview": "nuxt preview",
+    "test:e2e": "playwright test",
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
+    "@sqlite.org/sqlite-wasm": "3.53.0-build1",
     "nuxt": "^4.0.0",
     "vue": "^3.0.0",
     "vue-router": "^5.2.0"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.0.0",
+    "@playwright/test": "1.62.1",
     "eslint": "^10.0.0",
     "sass": "^1.0.0",
     "typescript": "^5.0.0",
