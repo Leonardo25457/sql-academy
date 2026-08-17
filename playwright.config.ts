@@ -2,6 +2,11 @@ import { defineConfig, devices } from '@playwright/test'
 
 const localBaseURL = 'http://127.0.0.1:3000'
 const remoteBaseURL = process.env.PLAYWRIGHT_BASE_URL
+const protectionBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+
+if (protectionBypassSecret !== undefined && remoteBaseURL === undefined) {
+  throw new Error('VERCEL_AUTOMATION_BYPASS_SECRET requires PLAYWRIGHT_BASE_URL.')
+}
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -9,7 +14,7 @@ export default defineConfig({
   reporter: 'line',
   use: {
     baseURL: remoteBaseURL ?? localBaseURL,
-    trace: 'retain-on-failure',
+    trace: protectionBypassSecret === undefined ? 'retain-on-failure' : 'off',
   },
   webServer: remoteBaseURL === undefined
     ? {

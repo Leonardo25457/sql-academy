@@ -41,16 +41,18 @@ npm run build
 npm run test:e2e
 ```
 
-Ejecución contra una URL remota desde PowerShell:
+Ejecución contra una URL remota protegida desde PowerShell:
 
 ```powershell
-$env:PLAYWRIGHT_BASE_URL="https://example.vercel.app"
+$env:PLAYWRIGHT_BASE_URL="https://preview.example"
+$env:VERCEL_AUTOMATION_BYPASS_SECRET="<secret>"
 npm run test:e2e
 ```
 
 Este mecanismo se utilizará con las URLs de Vercel Preview y Production cuando
 estén disponibles. Al definir `PLAYWRIGHT_BASE_URL`, Playwright no inicia el
-servidor local.
+servidor local. `VERCEL_AUTOMATION_BYPASS_SECRET` se obtiene desde Vercel
+Deployment Protection y nunca se versiona.
 
 ## Preview de producción
 

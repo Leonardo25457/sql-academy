@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
+const protectionBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+
 const runtimeStatus = (page: Page) => page.getByTestId('runtime-status')
 
 async function executeSql(page: Page, sql: string): Promise<void> {
@@ -7,6 +9,33 @@ async function executeSql(page: Page, sql: string): Promise<void> {
   await page.getByTestId('execute').click()
   await expect(runtimeStatus(page)).toHaveAttribute('data-status', 'ready')
 }
+
+test.beforeEach(async ({ baseURL, context }) => {
+  if (protectionBypassSecret === undefined) {
+    return
+  }
+
+  if (!baseURL) {
+    throw new Error('PLAYWRIGHT_BASE_URL is required for Vercel Protection bypass.')
+  }
+
+  try {
+    const response = await context.request.get(
+      new URL('/spikes/sqlite-wasm', baseURL).href,
+      {
+        headers: {
+          'x-vercel-protection-bypass': protectionBypassSecret,
+          'x-vercel-set-bypass-cookie': 'true',
+        },
+        maxRedirects: 0,
+      },
+    )
+    await response.dispose()
+  }
+  catch {
+    throw new Error('Unable to initialize Vercel Deployment Protection bypass.')
+  }
+})
 
 test('SQLite WASM spike lifecycle', async ({ page }) => {
   await page.goto('/spikes/sqlite-wasm')
