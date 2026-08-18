@@ -2,7 +2,12 @@ import { defineConfig, devices } from '@playwright/test'
 
 const localBaseURL = 'http://127.0.0.1:3000'
 const remoteBaseURL = process.env.PLAYWRIGHT_BASE_URL
-const protectionBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+const rawProtectionBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+const protectionBypassSecret = rawProtectionBypassSecret?.trim()
+
+if (rawProtectionBypassSecret !== undefined && !protectionBypassSecret) {
+  throw new Error('VERCEL_AUTOMATION_BYPASS_SECRET must not be empty.')
+}
 
 if (protectionBypassSecret !== undefined && remoteBaseURL === undefined) {
   throw new Error('VERCEL_AUTOMATION_BYPASS_SECRET requires PLAYWRIGHT_BASE_URL.')
