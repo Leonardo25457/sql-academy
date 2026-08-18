@@ -1,22 +1,60 @@
 import { expect, test, type Page } from './fixtures'
 
 const viewportWidths = [320, 375, 768, 1024, 1440, 1920]
+const vercelPreviewHostname
+  = /^sql-learning-[a-z0-9]+-leonardo-pineda-carrions-projects\.vercel\.app$/
+const vercelFeedbackErrorMessage
+  = "TypeError: undefined is not an object (evaluating 'navigator.storage.persisted')"
+const vercelFeedbackFrameURL = 'https://vercel.live/_next-live/feedback/feedback.html'
 
-async function captureRuntimeErrors(page: Page): Promise<string[]> {
-  const pageErrors: string[] = []
+interface RuntimeErrorDetails {
+  message: string
+  stack: string
+}
 
-  page.on('pageerror', error => pageErrors.push(error.message))
+function isExpectedVercelPreview(): boolean {
+  const baseURL = process.env.PLAYWRIGHT_BASE_URL
+
+  if (!baseURL) {
+    return false
+  }
+
+  try {
+    const targetURL = new URL(baseURL)
+    return targetURL.protocol === 'https:' && vercelPreviewHostname.test(targetURL.hostname)
+  }
+  catch {
+    return false
+  }
+}
+
+// Vercel Preview Feedback injects a cross-origin iframe, and Playwright WebKit has no
+// navigator.storage. This proven external error requires the exact target, message, and origin.
+function isKnownVercelPreviewFeedbackError(error: RuntimeErrorDetails): boolean {
+  return isExpectedVercelPreview()
+    && error.message === vercelFeedbackErrorMessage
+    && error.stack.includes(vercelFeedbackFrameURL)
+}
+
+async function captureRuntimeErrors(page: Page): Promise<RuntimeErrorDetails[]> {
+  const pageErrors: RuntimeErrorDetails[] = []
+
+  page.on('pageerror', error => pageErrors.push({
+    message: error.message,
+    stack: error.stack ?? '',
+  }))
   await page.addInitScript(() => {
     const testWindow = window as typeof window & {
-      appShellUnhandledRejections: string[]
+      appShellUnhandledRejections: RuntimeErrorDetails[]
     }
 
     testWindow.appShellUnhandledRejections = []
     window.addEventListener('unhandledrejection', (event) => {
-      const message = event.reason instanceof Error
-        ? event.reason.message
-        : String(event.reason)
-      testWindow.appShellUnhandledRejections.push(message)
+      const reason = event.reason
+      testWindow.appShellUnhandledRejections.push({
+        message: reason instanceof Error ? `${reason.name}: ${reason.message}` : String(reason),
+        stack: reason instanceof Error ? reason.stack ?? '' : '',
+      })
     })
   })
 
@@ -147,10 +185,16 @@ test('App Shell is semantic, accessible and responsive', async ({ page }) => {
   }))
   const unhandledRejections = await page.evaluate(() => {
     const testWindow = window as typeof window & {
-      appShellUnhandledRejections: string[]
+      appShellUnhandledRejections: RuntimeErrorDetails[]
     }
     return testWindow.appShellUnhandledRejections
   })
-  expect(pageErrors).toEqual([])
-  expect(unhandledRejections).toEqual([])
+  const unexpectedPageErrors = pageErrors.filter(
+    error => !isKnownVercelPreviewFeedbackError(error),
+  )
+  const unexpectedUnhandledRejections = unhandledRejections.filter(
+    error => !isKnownVercelPreviewFeedbackError(error),
+  )
+  expect(unexpectedPageErrors).toEqual([])
+  expect(unexpectedUnhandledRejections).toEqual([])
 })
