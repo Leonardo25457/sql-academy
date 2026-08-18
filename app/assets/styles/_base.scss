@@ -1,0 +1,38 @@
+html {
+  background: var(--color-background);
+  font-family: var(--font-sans);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  text-rendering: optimizelegibility;
+}
+
+h1,
+h2,
+h3 {
+  margin-block-start: 0;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}

@@ -7,16 +7,7 @@
       Saltar al contenido principal
     </a>
 
-    <header class="site-header">
-      <div class="site-container">
-        <NuxtLink
-          class="site-brand"
-          to="/"
-        >
-          SQL Academy
-        </NuxtLink>
-      </div>
-    </header>
+    <AppHeader />
 
     <main
       id="main-content"
@@ -26,10 +17,18 @@
       <slot />
     </main>
 
-    <footer class="site-footer">
-      <div class="site-container">
-        <p>Aprende SQL con práctica y contexto real.</p>
-      </div>
-    </footer>
+    <AppFooter />
   </div>
 </template>
+
+<style scoped lang="scss">
+.site-shell {
+  display: grid;
+  min-height: 100vh;
+  grid-template-rows: auto 1fr auto;
+}
+
+.site-main {
+  min-width: 0;
+}
+</style>

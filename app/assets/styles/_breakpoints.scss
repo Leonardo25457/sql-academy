@@ -1,0 +1,14 @@
+$tablet: 48rem;
+$desktop: 72rem;
+
+@mixin from-tablet {
+  @media (min-width: $tablet) {
+    @content;
+  }
+}
+
+@mixin from-desktop {
+  @media (min-width: $desktop) {
+    @content;
+  }
+}
