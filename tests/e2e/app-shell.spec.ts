@@ -75,6 +75,8 @@ test('App Shell is semantic, accessible and responsive', async ({ page }) => {
   await expect(main).toBeFocused()
   await expect(page).toHaveURL(/\/#main-content$/)
 
+  await page.goto('/')
+  await expect(page).toHaveURL(url => url.pathname === '/' && url.hash === '')
   await brand.focus()
   await expect(brand).toBeFocused()
   const brandFocusStyle = await brand.evaluate((element) => {
